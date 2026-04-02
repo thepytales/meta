@@ -15,27 +15,17 @@
         renderer="antialias: false; colorManagement: true; sortObjects: false;"
         cursor="rayOrigin: mouse">
 
-        <a-entity 
-            gaussian_splatting="src: raum.ply" 
-            position="0 2 0" 
-            rotation="0 0 0">
-        </a-entity>
+        <a-entity gaussian_splatting="src: raum.ply" position="0 2 0"></a-entity>
 
-        <a-plane 
-            position="0 0 0" 
-            rotation="-90 0 0" 
-            width="20" 
-            height="20" 
-            visible="false">
-        </a-plane>
+        <a-plane position="0 0 0" rotation="-90 0 0" width="20" height="20" visible="false"></a-plane>
 
         <a-entity position="0.5 0 -1.2">
             <a-box position="0 0.4 0" width="0.6" height="0.8" depth="0.6" color="#111111"></a-box>
             <a-box position="0 0.85 0" width="1.2" height="0.1" depth="1.0" color="#222222"></a-box>
             
-            <a-box class="grabbable" position="-0.3 0.975 -0.3" scale="0.15 0.15 0.15" color="#87CEFA"></a-box>
-            <a-sphere class="grabbable" position="0.3 1.0 -0.3" radius="0.1" color="#FF69B4"></a-sphere>
-            <a-cylinder class="grabbable" position="-0.3 1.0 0.2" radius="0.08" height="0.2" color="#98FB98"></a-cylinder>
+            <a-box class="grabbable" position="-0.3 0.975 0" scale="0.15 0.15 0.15" color="#87CEFA"></a-box>
+            <a-sphere class="grabbable" position="0.3 1.0 0" radius="0.1" color="#FF69B4"></a-sphere>
+            <a-cylinder class="grabbable" position="0 1.0 -0.2" radius="0.08" height="0.2" color="#98FB98"></a-cylinder>
 
             <a-entity class="grabbable" position="0.2 0.93 0.1" spinable>
                 <a-cylinder radius="0.05" height="0.02" color="#333333"></a-cylinder>
@@ -65,14 +55,6 @@
             <a-entity id="camera" camera position="0 1.6 0" look-controls></a-entity>
             <a-entity oculus-touch-controls="hand: left" raycaster="objects: .grabbable; far: 3; showLine: true" grabber></a-entity>
             <a-entity oculus-touch-controls="hand: right" raycaster="objects: .grabbable; far: 3; showLine: true" grabber></a-entity>
-        </a-entity>
-
-        <a-light type="ambient" intensity="0.5"></a-light>
-        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
-        
-    </a-scene>
-</body>
-</html>
         </a-entity>
 
         <a-light type="ambient" intensity="0.5"></a-light>
