@@ -102,65 +102,57 @@ AFRAME.registerComponent('sand-timer', {
     }
 });
 
-// Fidget Spinner Logik
+// Spezial-Logik für den Fidget Spinner
 AFRAME.registerComponent('spinable', {
     init: function () {
         this.spinVelocity = 0;
-        this.friction = 0.985;
-        // Andrehen beim Klicken/Triggern
-        this.el.addEventListener('click', () => { this.spinVelocity += 20; });
+        this.friction = 0.99; // Etwas weniger Reibung für längeres Drehen
+        // 'click' wird vom Raycaster ausgelöst, wenn man den Trigger drückt
+        this.el.addEventListener('click', () => { 
+            this.spinVelocity += 15; 
+        });
     },
     tick: function (time, timeDelta) {
-        this.el.object3D.rotation.y += this.spinVelocity * (timeDelta / 1000);
-        this.spinVelocity *= this.friction;
+        if (this.spinVelocity > 0.1) {
+            this.el.object3D.rotation.y += this.spinVelocity * (timeDelta / 1000);
+            this.spinVelocity *= this.friction;
+        }
     }
 });
 
-// Stress-Ball Logik: Reagiert jetzt direkt auf die Grab-Events
-AFRAME.registerComponent('squishable', {
-    init: function () {
-        this.isSqueezed = false;
-        this.el.addEventListener('grabbed', () => { this.isSqueezed = true; });
-        this.el.addEventListener('released', () => { this.isSqueezed = false; });
-    },
-    tick: function () {
-        const targetScale = this.isSqueezed ? {x: 1.2, y: 0.6, z: 1.2} : {x: 1, y: 1, z: 1};
-        const currentScale = this.el.getAttribute('scale') || {x: 1, y: 1, z: 1};
-        this.el.setAttribute('scale', {
-            x: currentScale.x + (targetScale.x - currentScale.x) * 0.1,
-            y: currentScale.y + (targetScale.y - currentScale.y) * 0.1,
-            z: currentScale.z + (targetScale.z - currentScale.z) * 0.1
-        });
-    }
-});
-
-// Sanduhr Logik: Sand läuft je nach Orientierung
+// Spezial-Logik für die Sanduhr
 AFRAME.registerComponent('sand-timer', {
     init: function () {
-        this.sandLevel = 1.0; // 1.0 = voll oben, 0.0 = leer
+        this.sandLevel = 1.0; 
         this.sandEl = this.el.querySelector('#sand');
     },
     tick: function (time, timeDelta) {
-        // Welt-Rotation abfragen, um zu prüfen ob sie auf dem Kopf steht
-        const rotation = this.el.object3D.rotation;
-        const isUpsideDown = Math.abs(rotation.x) > Math.PI / 2 || Math.abs(rotation.z) > Math.PI / 2;
+        // Wir prüfen die Welt-Rotation der Sanduhr
+        const worldRotation = new THREE.Quaternion();
+        this.el.object3D.getWorldQuaternion(worldRotation);
+        const upVector = new THREE.Vector3(0, 1, 0).applyQuaternion(worldRotation);
         
-        // Sand-Logik (sehr vereinfacht für die Demo)
+        // Wenn der "Up"-Vektor nach unten zeigt, läuft der Sand
+        const isUpsideDown = upVector.y < 0;
+        
+        const speed = 0.0005 * timeDelta; 
         if (isUpsideDown && this.sandLevel > 0) {
-            this.sandLevel -= 0.001 * (timeDelta / 16); // Sand läuft
+            this.sandLevel -= speed;
         } else if (!isUpsideDown && this.sandLevel < 1.0) {
-             this.sandLevel += 0.001 * (timeDelta / 16); // Sand fließt zurück
+            this.sandLevel += speed;
         }
 
-        // Visuelle Umsetzung per Scale und Position des Sand-Zylinders
+        // Clip auf 0 bis 1
+        this.sandLevel = Math.max(0, Math.min(1, this.sandLevel));
+
+        // Visuelles Update des Sand-Zylinders
         this.sandEl.setAttribute('scale', {x: 1, y: this.sandLevel, z: 1});
-        // Position anpassen, damit der Sand immer am "Boden" klebt
         const offset = (1 - this.sandLevel) * 0.09;
         this.sandEl.setAttribute('position', {x: 0, y: isUpsideDown ? offset : -offset, z: 0});
     }
 });
 
-// Hilfsskript zur automatischen Korrektur der Kamera-Position im VR-Modus
+// VR-Init Logik
 document.querySelector('a-scene').addEventListener('enter-vr', function () {
-    console.log("Eintritt in VR: Physisches Laufen aktiviert.");
+    console.log("VR-Modus gestartet.");
 });

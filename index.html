@@ -27,7 +27,12 @@
             <a-sphere class="grabbable" position="0.3 1.0 0" radius="0.1" color="#FF69B4"></a-sphere>
             <a-cylinder class="grabbable" position="0 1.0 -0.2" radius="0.08" height="0.2" color="#98FB98"></a-cylinder>
 
-            <a-entity class="grabbable" position="0.2 0.93 0.1" spinable>
+            <a-entity 
+                class="grabbable" 
+                position="0.2 0.93 0.1" 
+                spinable 
+                geometry="primitive: cylinder; radius: 0.15; height: 0.02" 
+                material="visible: false">
                 <a-cylinder radius="0.05" height="0.02" color="#333333"></a-cylinder>
                 <a-cylinder position="0.12 0 0" radius="0.04" height="0.015" color="#FFD700"></a-cylinder>
                 <a-cylinder position="-0.06 0 0.1" radius="0.04" height="0.015" color="#FFD700"></a-cylinder>
