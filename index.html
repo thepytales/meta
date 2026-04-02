@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebXR Meta Quest 2 Environment</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mkkellogg/aframe-gaussian-splatting@0.4.1/build/aframe-gaussian-splatting.min.js"></script>
+    <script type="module" src="script.js"></script>
+</head>
+<body>
+    <a-scene 
+        xr-mode-ui="enabled: true" 
+        renderer="antialias: false; colorManagement: true; sortObjects: false; multiviewStereo: false;"
+        cursor="rayOrigin: mouse">
+
+        <a-entity 
+            gaussian_splatting="src: raum.splat" 
+            position="0 0 0" 
+            rotation="0 0 0">
+        </a-entity>
+
+        <a-box 
+            class="grabbable" 
+            color="#4CC3D9" 
+            position="0 1 -1.5" 
+            scale="0.5 0.5 0.5"
+            shadow="receive: true; cast: true">
+        </a-box>
+
+        <a-entity id="rig" movement-controls="controls: gamepad, keyboard; speed: 0.15">
+            <a-entity 
+                id="camera" 
+                camera 
+                position="0 1.6 0" 
+                look-controls>
+            </a-entity>
+            
+            <a-entity 
+                id="left-hand"
+                oculus-touch-controls="hand: left" 
+                raycaster="objects: .grabbable; far: 3; showLine: true"
+                grabber>
+            </a-entity>
+            
+            <a-entity 
+                id="right-hand"
+                oculus-touch-controls="hand: right" 
+                raycaster="objects: .grabbable; far: 3; showLine: true"
+                grabber>
+            </a-entity>
+        </a-entity>
+
+        <a-light type="ambient" intensity="0.5"></a-light>
+        <a-light type="directional" position="1 2 1" intensity="0.8"></a-light>
+        
+    </a-scene>
+</body>
+</html>
