@@ -1,4 +1,4 @@
-// Zentrales Grabber-Skript für alle Objekte
+// 1. ZENTRALER GRABBER (Verantwortlich für das Aufheben)
 AFRAME.registerComponent('grabber', {
     init: function () {
         this.onTriggerDown = this.onTriggerDown.bind(this);
@@ -12,6 +12,7 @@ AFRAME.registerComponent('grabber', {
         if (!raycaster || raycaster.intersections.length === 0) return;
         
         let intersectEl = raycaster.intersections[0].object.el;
+        // FIND-FIX: Sucht das nächste Element mit der Klasse .grabbable
         let target = intersectEl.closest('.grabbable');
         
         if (target) {
@@ -29,15 +30,16 @@ AFRAME.registerComponent('grabber', {
     }
 });
 
-// Fidget Spinner: Reagiert auf A/X Button des zweiten Controllers
+// 2. SPINABLE (Nur für die Drehung zuständig)
 AFRAME.registerComponent('spinable', {
     init: function () {
         this.spinVelocity = 0;
         this.friction = 0.99;
         
-        // Hört auf Button-Events der Controller (A-Taste oder X-Taste)
-        window.addEventListener('abuttondown', () => { this.spinVelocity += 15; });
-        window.addEventListener('xbuttondown', () => { this.spinVelocity += 15; });
+        // Andrehen per Button-Druck (A oder X)
+        const spinAction = () => { this.spinVelocity += 15; };
+        window.addEventListener('abuttondown', spinAction);
+        window.addEventListener('xbuttondown', spinAction);
     },
     tick: function (time, timeDelta) {
         if (this.spinVelocity > 0.01) {
@@ -47,28 +49,40 @@ AFRAME.registerComponent('spinable', {
     }
 });
 
-// Stress-Ball: Realistisches Quetschen
+// 3. SQUISHABLE (Nur für den Stressball-Effekt)
 AFRAME.registerComponent('squishable', {
     init: function () {
         this.isSqueezed = false;
         this.handRotation = new THREE.Euler();
+        
         this.el.addEventListener('grabbed', (evt) => { 
             this.isSqueezed = true; 
             this.handRotation.copy(evt.detail.handEl.object3D.rotation);
         });
-        this.el.addEventListener('released', () => { this.isSqueezed = false; });
+        
+        this.el.addEventListener('released', () => { 
+            this.isSqueezed = false; 
+        });
     },
     tick: function () {
         const currentScale = this.el.getAttribute('scale') || {x: 1, y: 1, z: 1};
         let targetScale = {x: 1, y: 1, z: 1};
+
         if (this.isSqueezed) {
+            // Ball lokal gegen die Handfläche ausrichten und flach quetschen
             this.el.object3D.rotation.set(this.handRotation.x, this.handRotation.y, this.handRotation.z + Math.PI / 2);
-            targetScale = {x: 1.3, y: 1.3, z: 0.5};
+            targetScale = {x: 1.3, y: 1.3, z: 0.5}; 
         }
+
         this.el.setAttribute('scale', {
             x: currentScale.x + (targetScale.x - currentScale.x) * 0.15,
             y: currentScale.y + (targetScale.y - currentScale.y) * 0.15,
             z: currentScale.z + (targetScale.z - currentScale.z) * 0.15
         });
     }
+});
+
+// 4. VR-INIT (Logger)
+document.querySelector('a-scene').addEventListener('enter-vr', function () {
+    console.log("VR-Modus gestartet.");
 });
