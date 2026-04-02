@@ -1,76 +1,93 @@
-// Grabber-Update: Muss 'click'-Events für das Andrehen durchlassen
+// Grabber-Update: Findet jetzt zuverlässig übergeordnete Gruppen (Spinner/Sanduhr)
 AFRAME.registerComponent('grabber', {
     init: function () {
         this.onTriggerDown = this.onTriggerDown.bind(this);
         this.onTriggerUp = this.onTriggerUp.bind(this);
-        
         this.el.addEventListener('triggerdown', this.onTriggerDown);
         this.el.addEventListener('triggerup', this.onTriggerUp);
-        
         this.grabbedEntity = null;
     },
-    
     onTriggerDown: function (evt) {
         const raycaster = this.el.components.raycaster;
-        if (!raycaster) return;
+        if (!raycaster || raycaster.intersections.length === 0) return;
         
-        // WICHTIG: Raycaster muss 'spinable' Objekte ignorieren, wenn wir greifen wollen.
-        // Die 'spinable' Komponente regelt das Andrehen über Standard-A-Frame 'click' Events.
-        const intersections = raycaster.intersections;
+        let target = raycaster.intersections[0].object.el;
+        // Suche hoch bis zur Szene nach der .grabbable Klasse
+        while (target && target.tagName !== 'A-SCENE' && !target.classList.contains('grabbable')) {
+            target = target.parentElement;
+        }
         
-        if (intersections.length > 0) {
-            let target = intersections[0].object.el;
-            
-            while (target && !target.classList.contains('grabbable')) {
-                target = target.parentElement;
-            }
-            
-            // Verhindert das Greifen, wenn es bereits angestoßen wird (click)
-            if (target && target.classList.contains('grabbable')) {
-                this.grabbedEntity = target;
-                this.el.object3D.attach(this.grabbedEntity.object3D);
-            }
+        if (target && target.classList.contains('grabbable')) {
+            this.grabbedEntity = target;
+            this.el.object3D.attach(this.grabbedEntity.object3D);
+            // Event für Spezialeffekte (wie Squish) feuern
+            this.grabbedEntity.emit('grabbed', { hand: this.el });
         }
     },
-    
     onTriggerUp: function (evt) {
         if (this.grabbedEntity) {
+            this.grabbedEntity.emit('released');
             this.el.sceneEl.object3D.attach(this.grabbedEntity.object3D);
             this.grabbedEntity = null;
         }
     }
 });
 
-// Code-basierte Fidget Spinner Logik (ohne Physik-Engine)
+// Fidget Spinner Logik
 AFRAME.registerComponent('spinable', {
     init: function () {
-        this.spinVelocity = 0; // Aktuelle Drehgeschwindigkeit
-        this.friction = 0.985;  // Dämpfung (je niedriger, desto schneller stoppt er)
-        this.spinImpulse = 25;  // Kraft eines Stoßes
-        
-        // Registriert das Andrehen über den Raycaster (click/triggerdown)
-        this.el.addEventListener('click', this.onSpinImpulse.bind(this));
+        this.spinVelocity = 0;
+        this.friction = 0.985;
+        // Andrehen beim Klicken/Triggern
+        this.el.addEventListener('click', () => { this.spinVelocity += 20; });
     },
-    
-    onSpinImpulse: function (evt) {
-        // Fügt Drehgeschwindigkeit hinzu (Impuls)
-        this.spinVelocity += this.spinImpulse;
-    },
-    
     tick: function (time, timeDelta) {
-        // timeDelta in Sekunden umrechnen für konsistente Animation
-        const deltaSeconds = timeDelta / 1000;
-        
-        // Rotation anwenden (um die Y-Achse)
-        this.el.object3D.rotation.y += this.spinVelocity * deltaSeconds;
-        
-        // Reibung anwenden: Geschwindigkeit dämpfen
+        this.el.object3D.rotation.y += this.spinVelocity * (timeDelta / 1000);
         this.spinVelocity *= this.friction;
+    }
+});
+
+// Stress-Ball Logik: Reagiert jetzt direkt auf die Grab-Events
+AFRAME.registerComponent('squishable', {
+    init: function () {
+        this.isSqueezed = false;
+        this.el.addEventListener('grabbed', () => { this.isSqueezed = true; });
+        this.el.addEventListener('released', () => { this.isSqueezed = false; });
+    },
+    tick: function () {
+        const targetScale = this.isSqueezed ? {x: 1.2, y: 0.6, z: 1.2} : {x: 1, y: 1, z: 1};
+        const currentScale = this.el.getAttribute('scale') || {x: 1, y: 1, z: 1};
+        this.el.setAttribute('scale', {
+            x: currentScale.x + (targetScale.x - currentScale.x) * 0.1,
+            y: currentScale.y + (targetScale.y - currentScale.y) * 0.1,
+            z: currentScale.z + (targetScale.z - currentScale.z) * 0.1
+        });
+    }
+});
+
+// Sanduhr Logik: Sand läuft je nach Orientierung
+AFRAME.registerComponent('sand-timer', {
+    init: function () {
+        this.sandLevel = 1.0; // 1.0 = voll oben, 0.0 = leer
+        this.sandEl = this.el.querySelector('#sand');
+    },
+    tick: function (time, timeDelta) {
+        // Welt-Rotation abfragen, um zu prüfen ob sie auf dem Kopf steht
+        const rotation = this.el.object3D.rotation;
+        const isUpsideDown = Math.abs(rotation.x) > Math.PI / 2 || Math.abs(rotation.z) > Math.PI / 2;
         
-        // Kleiner Schwellenwert, um Berechnungen zu stoppen, wenn er fast steht
-        if (Math.abs(this.spinVelocity) < 0.01) {
-            this.spinVelocity = 0;
+        // Sand-Logik (sehr vereinfacht für die Demo)
+        if (isUpsideDown && this.sandLevel > 0) {
+            this.sandLevel -= 0.001 * (timeDelta / 16); // Sand läuft
+        } else if (!isUpsideDown && this.sandLevel < 1.0) {
+             this.sandLevel += 0.001 * (timeDelta / 16); // Sand fließt zurück
         }
+
+        // Visuelle Umsetzung per Scale und Position des Sand-Zylinders
+        this.sandEl.setAttribute('scale', {x: 1, y: this.sandLevel, z: 1});
+        // Position anpassen, damit der Sand immer am "Boden" klebt
+        const offset = (1 - this.sandLevel) * 0.09;
+        this.sandEl.setAttribute('position', {x: 0, y: isUpsideDown ? offset : -offset, z: 0});
     }
 });
 
