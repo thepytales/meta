@@ -33,9 +33,31 @@
             <a-box position="0 0.4 0" width="0.6" height="0.8" depth="0.6" color="#111111"></a-box>
             <a-box position="0 0.85 0" width="1.2" height="0.1" depth="1.0" color="#222222"></a-box>
             
-            <a-box class="grabbable" position="-0.3 0.975 0" scale="0.15 0.15 0.15" color="#87CEFA"></a-box>
-            <a-sphere class="grabbable" position="0.3 1.0 0" radius="0.1" color="#FF69B4"></a-sphere>
-            <a-cylinder class="grabbable" position="0 1.0 -0.2" radius="0.08" height="0.2" color="#98FB98"></a-cylinder>
+            <a-box class="grabbable" position="-0.3 0.975 -0.3" scale="0.15 0.15 0.15" color="#87CEFA"></a-box>
+            <a-sphere class="grabbable" position="0.3 1.0 -0.3" radius="0.1" color="#FF69B4"></a-sphere>
+            <a-cylinder class="grabbable" position="-0.3 1.0 0.2" radius="0.08" height="0.2" color="#98FB98"></a-cylinder>
+
+            <a-entity class="grabbable" position="0.2 0.93 0.1" spinable>
+                <a-cylinder radius="0.05" height="0.02" color="#333333"></a-cylinder>
+                <a-cylinder position="0.12 0 0" radius="0.04" height="0.015" color="#FFD700"></a-cylinder>
+                <a-cylinder position="-0.06 0 0.1" radius="0.04" height="0.015" color="#FFD700"></a-cylinder>
+                <a-cylinder position="-0.06 0 -0.1" radius="0.04" height="0.015" color="#FFD700"></a-cylinder>
+            </a-entity>
+
+            <a-sphere 
+                class="grabbable" 
+                position="-0.1 0.98 -0.1" 
+                radius="0.08" 
+                color="#FF4500" 
+                squishable>
+            </a-sphere>
+
+            <a-entity class="grabbable" position="0.4 1.05 0.1" sand-timer>
+                <a-cylinder radius="0.06" height="0.2" material="opacity: 0.3; transparent: true; color: #ADD8E6"></a-cylinder>
+                <a-cylinder id="sand" radius="0.055" height="0.18" color="#F4A460" position="0 0 0"></a-cylinder>
+                <a-box width="0.13" height="0.01" depth="0.13" position="0 0.1 0" color="#5c3a21"></a-box>
+                <a-box width="0.13" height="0.01" depth="0.13" position="0 -0.1 0" color="#5c3a21"></a-box>
+            </a-entity>
         </a-entity>
 
         <a-entity id="rig" movement-controls="controls: gamepad, keyboard; speed: 0.15" position="0 0 0">
