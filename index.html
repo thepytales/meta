@@ -6,17 +6,17 @@
     <title>WebXR Meta Quest 2 Environment</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mkkellogg/aframe-gaussian-splatting@0.4.1/build/aframe-gaussian-splatting.min.js"></script>
+    <script src="https://quadjr.github.io/aframe-gaussian-splatting/index.js"></script>
     <script type="module" src="script.js"></script>
 </head>
 <body>
     <a-scene 
         xr-mode-ui="enabled: true" 
-        renderer="antialias: false; colorManagement: true; sortObjects: false; multiviewStereo: false;"
+        renderer="antialias: false; colorManagement: true; sortObjects: false;"
         cursor="rayOrigin: mouse">
 
         <a-entity 
-            gaussian_splatting="src: raum.splat" 
+            gaussian_splatting="src: raum.ply" 
             position="0 0 0" 
             rotation="0 0 0">
         </a-entity>
